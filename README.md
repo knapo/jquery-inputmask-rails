@@ -21,3 +21,13 @@ and
 ```
 
 to your `app/assets/javascripts/application.js` or other js manifest file.
+
+Optional extensions:
+
+```javascript
+//= require jquery.inputmask.extensions
+//= require jquery.inputmask.date.extensions
+//= require jquery.inputmask.phone.extensions
+//= require jquery.inputmask.numeric.extensions
+//= require jquery.inputmask.regex.extensions
+```
