@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.summary     = %q{jquery.inputmask integration for Rails 3.1+ asset pipeline}
   s.description = %q{jquery.inputmask [https://github.com/RobinHerbots/jquery.inputmask] integration for Rails 3.1+ asset pipeline}
 
-  s.rubyforge_project = "jquery-colorbox-rails"
+  s.rubyforge_project = "jquery-inputmask-rails"
   s.files = Dir["{vendor,lib}/**/*"] + ["MIT-LICENSE", "Rakefile", "Gemfile", "README.md"]
   s.require_paths = ["lib"]
 
