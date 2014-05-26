@@ -80,11 +80,14 @@ Optional extensions on the jquery.inputmask base
             },
             regex: {
                 number: function (opts) {
-                    var escapedGroupSeparator = $.inputmask.escapeRegex.call(this, opts.groupSeparator);
                     var escapedRadixPoint = $.inputmask.escapeRegex.call(this, opts.radixPoint);
                     var digitExpression = isNaN(opts.digits) ? opts.digits : '{0,' + opts.digits + '}';
-                    var signedExpression = opts.allowPlus || opts.allowMinus ? "[" + (opts.allowPlus ? "\+" : "") + (opts.allowMinus ? "-" : "") + "]?" : "";
-                    return new RegExp("^" + signedExpression + "(\\d+|\\d{1," + opts.groupSize + "}((" + escapedGroupSeparator + "\\d{" + opts.groupSize + "})?)+)(" + escapedRadixPoint + "\\d" + digitExpression + ")?$");
+                    var integerExpression = isNaN(opts.integerDigits) ? opts.integerDigits : '{1,' + opts.integerDigits + '}';
+                    var signedExpression = opts.allowPlus || opts.allowMinus ? "[" + (opts.allowPlus ? "\+" : "") + (opts.allowMinus ? "-" : "") + "]?" : "";                   
+
+                    var currentRegExp = "^" + signedExpression + "\\d" + integerExpression + "(" + escapedRadixPoint + "\\d" + digitExpression + ")?$";
+                    return new RegExp(currentRegExp);
+
                 }
             },
             onKeyDown: function (e, buffer, opts) {
@@ -108,6 +111,7 @@ Optional extensions on the jquery.inputmask base
             definitions: {
                 '~': { //real number
                     validator: function (chrs, buffer, pos, strict, opts) {
+                        var iopts = $.extend({}, opts, { digits: strict ? "*" : opts.digits });
                         if (chrs == "") return false;
                         if (!strict && pos <= 1 && buffer[0] === '0' && new RegExp("[\\d-]").test(chrs) && buffer.join('').length == 1) { //handle first char
                             buffer[0] = "";
@@ -122,12 +126,17 @@ Optional extensions on the jquery.inputmask base
                         //strip groupseparator
                         var escapedGroupSeparator = $.inputmask.escapeRegex.call(this, opts.groupSeparator);
                         bufferStr = bufferStr.replace(new RegExp(escapedGroupSeparator, "g"), '');
+                        if (strict && bufferStr.lastIndexOf(opts.radixPoint) == bufferStr.length - 1) {
+                            var escapedRadixPoint = $.inputmask.escapeRegex.call(this, opts.radixPoint);
+                            bufferStr = bufferStr.replace(new RegExp(escapedRadixPoint, "g"), '');
+                        }
+                        if (!strict && bufferStr == "") return false;
 
-                        var isValid = opts.regex.number(opts).test(bufferStr);
+                        var isValid = opts.regex.number(iopts).test(bufferStr);
                         if (!isValid) {
                             //let's help the regex a bit
                             bufferStr += "0";
-                            isValid = opts.regex.number(opts).test(bufferStr);
+                            isValid = opts.regex.number(iopts).test(bufferStr);
                             if (!isValid) {
                                 //make a valid group
                                 var lastGroupSeparator = bufferStr.lastIndexOf(opts.groupSeparator);
@@ -135,10 +144,10 @@ Optional extensions on the jquery.inputmask base
                                     bufferStr += "0";
                                 }
 
-                                isValid = opts.regex.number(opts).test(bufferStr);
+                                isValid = opts.regex.number(iopts).test(bufferStr);
                                 if (!isValid && !strict) {
                                     if (chrs == opts.radixPoint) {
-                                        isValid = opts.regex.number(opts).test("0" + bufferStr + "0");
+                                        isValid = opts.regex.number(iopts).test("0" + bufferStr + "0");
                                         if (isValid) {
                                             buffer[pos] = "0";
                                             pos++;
@@ -150,7 +159,7 @@ Optional extensions on the jquery.inputmask base
                         }
 
                         if (isValid != false && !strict && chrs != opts.radixPoint) {
-                            var newPos = opts.postFormat(buffer, pos, false, opts);
+                            var newPos = opts.postFormat(buffer, pos, (chrs == "-" || chrs == "+") ? true : false, opts);
                             return { "pos": newPos };
                         }
 
