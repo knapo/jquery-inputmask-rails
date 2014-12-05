@@ -11,7 +11,7 @@ When using this extension make sure you specify the correct url to get the masks
  $(selector).inputmask("phone", {
                 url: "Scripts/jquery.inputmask/phone-codes/phone-codes.json", 
                 onKeyValidation: function () { //show some metadata in the console
-                    console.log($(this).inputmask("getmetadata")["name_en"]);
+                    console.log($(this).inputmask("getmetadata")["cd"]);
                 } 
   });
 
@@ -20,7 +20,9 @@ When using this extension make sure you specify the correct url to get the masks
 (function ($) {
     $.extend($.inputmask.defaults.aliases, {
         'phone': {
-            url: "phone-codes/phone-codes.json",
+            url: "phone-codes/phone-codes.js",
+            maskInit: "+pp(pp)pppppppp",
+            countrycode: "",
             mask: function (opts) {
                 opts.definitions = {
                     'p': {
@@ -39,12 +41,39 @@ When using this extension make sure you specify the correct url to get the masks
                     dataType: 'json',
                     success: function (response) {
                         maskList = response;
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        alert(thrownError + " - " + opts.url);
                     }
                 });
-    
-                maskList.splice(0, 0, "+p(ppp)ppp-pppp");
+
+                maskList = maskList.sort(function (a, b) {
+                    return (a["mask"] || a) < (b["mask"] || b) ? -1 : 1;
+                });
+
+                if (opts.countrycode != "") {
+                    opts.maskInit = "+" + opts.countrycode + opts.maskInit.substring(3);
+                }
+                maskList.splice(0, 0, opts.maskInit);
                 return maskList;
+            },
+            nojumps: true,
+            nojumpsThreshold: 1,
+            onBeforeMask: function (value, opts) {
+                var processedValue = value.replace(/^0/g, "");
+                if (processedValue.indexOf(opts.countrycode) > 1 || processedValue.indexOf(opts.countrycode) == -1) {
+                    processedValue = opts.countrycode + processedValue;
+                }
+
+                return processedValue;
             }
+        },
+        'phonebe': {
+            alias: "phone",
+            url: "phone-codes/phone-be.js",
+            countrycode: "32",
+            nojumpsThreshold: 4
         }
     });
+    return $.fn.inputmask;
 })(jQuery);

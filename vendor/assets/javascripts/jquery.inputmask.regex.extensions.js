@@ -24,7 +24,7 @@ Allows for using regular expressions as a mask
             },
             definitions: {
                 'r': {
-                    validator: function (chrs, buffer, pos, strict, opts) {
+                    validator: function (chrs, maskset, pos, strict, opts) {
                         function regexToken(isGroup, isQuantifier) {
                             this.matches = [];
                             this.isGroup = isGroup || false;
@@ -103,7 +103,7 @@ Allows for using regular expressions as a mask
                                 if (matchToken["isGroup"] == true) {
                                     isvalid = validateRegexToken(matchToken, true);
                                 } else if (matchToken["isQuantifier"] == true) {
-                                    var crrntndx = token["matches"].indexOf(matchToken),
+                                    var crrntndx = $.inArray(matchToken, token["matches"]),
                                         matchGroup = token["matches"][crrntndx - 1];
                                     var regexPartBak = regexPart;
                                     if (isNaN(matchToken.quantifier.max)) {
@@ -128,7 +128,7 @@ Allows for using regular expressions as a mask
                                     }
                                 } else {
                                     var testExp;
-                                    if (matchToken[0] == "[") {
+                                    if (matchToken.charAt(0) == "[") {
                                         testExp = regexPart;
                                         testExp += matchToken;
                                         for (var j = 0; j < openGroupCount; j++) {
@@ -138,7 +138,7 @@ Allows for using regular expressions as a mask
                                         isvalid = exp.test(bufferStr);
                                     } else {
                                         for (var l = 0, tl = matchToken.length; l < tl; l++) {
-                                            if (matchToken[l] == "\\") continue;
+                                            if (matchToken.charAt(l) == "\\") continue;
                                             testExp = regexPart;
                                             testExp += matchToken.substr(0, l + 1);
                                             testExp = testExp.replace(/\|$/, "");
@@ -168,7 +168,7 @@ Allows for using regular expressions as a mask
                             analyseRegex();
                         }
 
-                        var cbuffer = buffer.slice(), regexPart = "", isValid = false, openGroupCount = 0;
+                        var cbuffer = maskset.buffer.slice(), regexPart = "", isValid = false, openGroupCount = 0;
                         cbuffer.splice(pos, 0, chrs);
                         var bufferStr = cbuffer.join('');
                         for (var i = 0; i < opts.regexTokens.length; i++) {
@@ -184,4 +184,5 @@ Allows for using regular expressions as a mask
             }
         }
     });
+    return $.fn.inputmask;
 })(jQuery);
