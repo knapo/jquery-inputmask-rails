@@ -18,12 +18,22 @@ task :update do
 
   puts 'Copying source js files...'
 
-  source_files = Dir['jquery.inputmask/js/*.js'].reject{ |file| file =~ /.min.js\Z/}
+  source_files = Dir['jquery.inputmask/dist/inputmask/*.js']
   source_files.each do |file|
     print "#{file.sub('jquery.inputmask/', '')}"
     FileUtils.cp(file, js_dir)
     puts "...ok"
   end
+
+  source_files = Dir['jquery.inputmask/js/*/*.js']
+  source_files.each do |file|
+    print "#{file.sub('jquery.inputmask/', '')}"
+    target_dir = File.join(js_dir, File.dirname(file).split('/').last)
+    FileUtils.mkdir_p(target_dir)
+    FileUtils.cp(file, target_dir)
+    puts "...ok"
+  end
+
 
   puts 'Updating version...'
   version = JSON.parse(File.read('jquery.inputmask/bower.json'))['version']
