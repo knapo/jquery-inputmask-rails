@@ -3,10 +3,10 @@
 * http://github.com/RobinHerbots/jquery.inputmask
 * Copyright (c) 2010 - 2015 Robin Herbots
 * Licensed under the MIT license (http://www.opensource.org/licenses/mit-license.php)
-* Version: 3.1.62-6
+* Version: 3.1.64-11
 */
 !function(factory) {
-    "function" == typeof define && define.amd ? define([ "jquery", "./jquery.inputmask" ], factory) : factory(jQuery);
+    "function" == typeof define && define.amd ? define([ "jquery", "./jquery.inputmask" ], factory) : "object" == typeof exports ? module.exports = factory(require("jquery"), require("./jquery.inputmask")) : factory(jQuery);
 }(function($) {
     return $.extend($.inputmask.defaults.aliases, {
         numeric: {
@@ -16,14 +16,16 @@
                     return escapedTxt;
                 }
                 if (0 !== opts.repeat && isNaN(opts.integerDigits) && (opts.integerDigits = opts.repeat), 
-                opts.repeat = 0, opts.groupSeparator == opts.radixPoint && (opts.groupSeparator = "." == opts.radixPoint ? "," : "," == opts.radixPoint ? "." : ""), 
+                opts.repeat = 0, opts.groupSeparator == opts.radixPoint && ("." == opts.radixPoint ? opts.groupSeparator = "," : "," == opts.radixPoint ? opts.groupSeparator = "." : opts.groupSeparator = ""), 
                 " " === opts.groupSeparator && (opts.skipOptionalPartCharacter = void 0), opts.autoGroup = opts.autoGroup && "" != opts.groupSeparator, 
                 opts.autoGroup && ("string" == typeof opts.groupSize && isFinite(opts.groupSize) && (opts.groupSize = parseInt(opts.groupSize)), 
                 isFinite(opts.integerDigits))) {
                     var seps = Math.floor(opts.integerDigits / opts.groupSize), mod = opts.integerDigits % opts.groupSize;
                     opts.integerDigits = parseInt(opts.integerDigits) + (0 == mod ? seps - 1 : seps);
                 }
-                opts.radixFocus = opts.radixFocus && "0" == opts.placeholder, opts.definitions[";"] = opts.definitions["~"];
+                opts.placeholder.length > 1 && (opts.placeholder = opts.placeholder.charAt(0)), 
+                opts.radixFocus = opts.radixFocus && "0" == opts.placeholder, opts.definitions[";"] = opts.definitions["~"], 
+                opts.definitions[";"].definitionSymbol = "~";
                 var mask = autoEscape(opts.prefix);
                 return mask += "[+]", mask += "~{1," + opts.integerDigits + "}", void 0 != opts.digits && (isNaN(opts.digits) || parseInt(opts.digits) > 0) && (mask += opts.digitsOptional ? "[" + (opts.decimalProtect ? ":" : opts.radixPoint) + ";{" + opts.digits + "}]" : (opts.decimalProtect ? ":" : opts.radixPoint) + ";{" + opts.digits + "}"), 
                 "" != opts.negationSymbol.back && (mask += "[-]"), mask += autoEscape(opts.suffix), 
@@ -88,8 +90,11 @@
                 if (e && "blur" == e.type) {
                     var maskedValue = buffer.join(""), processValue = maskedValue.replace(opts.prefix, "");
                     if (processValue = processValue.replace(opts.suffix, ""), processValue = processValue.replace(new RegExp($.inputmask.escapeRegex(opts.groupSeparator), "g"), ""), 
-                    processValue = processValue.replace($.inputmask.escapeRegex(opts.radixPoint), "."), 
-                    isFinite(processValue) && isFinite(opts.min) && parseFloat(processValue) < parseFloat(opts.min)) return opts.postFormat((opts.prefix + opts.min).split(""), 0, !0, opts);
+                    "," === opts.radixPoint && (processValue = processValue.replace($.inputmask.escapeRegex(opts.radixPoint), ".")), 
+                    isFinite(processValue) && isFinite(opts.min) && parseFloat(processValue) < parseFloat(opts.min)) return $.extend(!0, {
+                        refreshFromBuffer: !0,
+                        buffer: (opts.prefix + opts.min).split("")
+                    }, opts.postFormat((opts.prefix + opts.min).split(""), 0, !0, opts));
                     var tmpBufSplit = "" != opts.radixPoint ? buffer.join("").split(opts.radixPoint) : [ buffer.join("") ], matchRslt = tmpBufSplit[0].match(opts.regex.integerPart(opts)), matchRsltDigits = 2 == tmpBufSplit.length ? tmpBufSplit[1].match(opts.regex.integerNPart(opts)) : void 0;
                     !matchRslt || matchRslt[0] != opts.negationSymbol.front + "0" && matchRslt[0] != opts.negationSymbol.front && "+" != matchRslt[0] || void 0 != matchRsltDigits && !matchRsltDigits[0].match(/^0+$/) || buffer.splice(matchRslt.index, 1);
                     var radixPosition = $.inArray(opts.radixPoint, buffer);
@@ -205,7 +210,7 @@
             postValidation: function(buffer, opts) {
                 var isValid = !0, maskedValue = buffer.join(""), processValue = maskedValue.replace(opts.prefix, "");
                 return processValue = processValue.replace(opts.suffix, ""), processValue = processValue.replace(new RegExp($.inputmask.escapeRegex(opts.groupSeparator), "g"), ""), 
-                processValue = processValue.replace($.inputmask.escapeRegex(opts.radixPoint), "."), 
+                "," === opts.radixPoint && (processValue = processValue.replace($.inputmask.escapeRegex(opts.radixPoint), ".")), 
                 processValue = processValue.replace(new RegExp("^" + $.inputmask.escapeRegex(opts.negationSymbol.front)), "-"), 
                 processValue = processValue.replace(new RegExp($.inputmask.escapeRegex(opts.negationSymbol.back) + "$"), ""), 
                 isFinite(processValue) && isFinite(opts.max) && (isValid = parseFloat(processValue) <= parseFloat(opts.max)), 
@@ -283,9 +288,12 @@
             },
             insertMode: !0,
             autoUnmask: !1,
+            unmaskAsNumber: !1,
             onUnMask: function(maskedValue, unmaskedValue, opts) {
                 var processValue = maskedValue.replace(opts.prefix, "");
-                return processValue = processValue.replace(opts.suffix, ""), processValue = processValue.replace(new RegExp($.inputmask.escapeRegex(opts.groupSeparator), "g"), "");
+                return processValue = processValue.replace(opts.suffix, ""), processValue = processValue.replace(new RegExp($.inputmask.escapeRegex(opts.groupSeparator), "g"), ""), 
+                opts.unmaskAsNumber ? (processValue = processValue.replace($.inputmask.escapeRegex.call(this, opts.radixPoint), "."), 
+                Number(processValue)) : processValue;
             },
             isComplete: function(buffer, opts) {
                 var maskedValue = buffer.join(""), bufClone = buffer.slice();
@@ -308,8 +316,9 @@
             canClearPosition: function(maskset, position, lvp, strict, opts) {
                 var positionInput = maskset.validPositions[position].input, canClear = positionInput != opts.radixPoint && isFinite(positionInput) || position == lvp || positionInput == opts.groupSeparator || positionInput == opts.negationSymbol.front || positionInput == opts.negationSymbol.back;
                 if (canClear && isFinite(positionInput)) {
-                    var matchRslt = maskset.buffer.join("").substr(0, position).match(opts.regex.integerNPart(opts));
-                    if (!strict) {
+                    var matchRslt;
+                    if (!strict && maskset.buffer) {
+                        matchRslt = maskset.buffer.join("").substr(0, position).match(opts.regex.integerNPart(opts));
                         var pos = position + 1, isNull = null == matchRslt || 0 == parseInt(matchRslt[0].replace(new RegExp($.inputmask.escapeRegex(opts.groupSeparator), "g"), ""));
                         if (isNull) for (;maskset.validPositions[pos] && (maskset.validPositions[pos].input == opts.groupSeparator || "0" == maskset.validPositions[pos].input); ) delete maskset.validPositions[pos], 
                         pos++;
