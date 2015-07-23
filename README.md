@@ -25,9 +25,9 @@ to your `app/assets/javascripts/application.js` or other js manifest file.
 Optional extensions:
 
 ```javascript
-//= require jquery.inputmask.extensions
-//= require jquery.inputmask.date.extensions
-//= require jquery.inputmask.phone.extensions
-//= require jquery.inputmask.numeric.extensions
-//= require jquery.inputmask.regex.extensions
+//= require inputmask.extensions
+//= require inputmask.date.extensions
+//= require inputmask.phone.extensions
+//= require inputmask.numeric.extensions
+//= require inputmask.regex.extensions
 ```
