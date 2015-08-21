@@ -17,6 +17,7 @@ to your `Gemfile`
 and
 
 ```javascript
+//= require inputmask
 //= require jquery.inputmask
 ```
 
