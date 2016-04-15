@@ -1,13 +1,13 @@
 /*!
 * inputmask.date.extensions.js
-* http://github.com/RobinHerbots/jquery.inputmask
-* Copyright (c) 2010 - 2015 Robin Herbots
+* https://github.com/RobinHerbots/jquery.inputmask
+* Copyright (c) 2010 - 2016 Robin Herbots
 * Licensed under the MIT license (http://www.opensource.org/licenses/mit-license.php)
-* Version: 3.1.64-166
+* Version: 3.3.1-9
 */
 !function(factory) {
-    "function" == typeof define && define.amd ? define([ "jquery", "./inputmask" ], factory) : "object" == typeof exports ? module.exports = factory(require("jquery"), require("./inputmask")) : factory(jQuery);
-}(function($) {
+    "function" == typeof define && define.amd ? define([ "inputmask.dependencyLib", "inputmask" ], factory) : "object" == typeof exports ? module.exports = factory(require("./inputmask.dependencyLib.jquery"), require("./inputmask")) : factory(window.dependencyLib || jQuery, window.Inputmask);
+}(function($, Inputmask) {
     return Inputmask.extendDefinitions({
         h: {
             validator: "[01][0-9]|2[0-3]",
@@ -90,6 +90,11 @@
                     var maxxYear = maxYearPrefix + maxYearPostfix;
                     return minyear > maxxYear ? minyear : maxxYear;
                 }
+                if (currentyear >= minyear && maxyear >= currentyear) {
+                    for (var currentYearPrefix = currentyear.toString().slice(0, 2); currentYearPrefix + hint > maxyear; ) currentYearPrefix--;
+                    var currentYearAndHint = currentYearPrefix + hint;
+                    return minyear > currentYearAndHint ? minyear : currentYearAndHint;
+                }
                 return currentyear;
             },
             onKeyDown: function(e, buffer, caretPos, opts) {
@@ -97,7 +102,7 @@
                 if (e.ctrlKey && e.keyCode === Inputmask.keyCode.RIGHT) {
                     var today = new Date();
                     $input.val(today.getDate().toString() + (today.getMonth() + 1).toString() + today.getFullYear().toString()), 
-                    $input.triggerHandler("setvalue.inputmask");
+                    $input.trigger("setvalue");
                 }
             },
             getFrontValue: function(mask, buffer, opts) {
@@ -270,7 +275,7 @@
                 if (e.ctrlKey && e.keyCode === Inputmask.keyCode.RIGHT) {
                     var today = new Date();
                     $input.val((today.getMonth() + 1).toString() + today.getDate().toString() + today.getFullYear().toString()), 
-                    $input.triggerHandler("setvalue.inputmask");
+                    $input.trigger("setvalue");
                 }
             }
         },
@@ -284,7 +289,7 @@
                 if (e.ctrlKey && e.keyCode === Inputmask.keyCode.RIGHT) {
                     var today = new Date();
                     $input.val(today.getFullYear().toString() + (today.getMonth() + 1).toString() + today.getDate().toString()), 
-                    $input.triggerHandler("setvalue.inputmask");
+                    $input.trigger("setvalue");
                 }
             }
         },
@@ -422,6 +427,32 @@
             placeholder: "dd/mm/yyyy hh:mm xm",
             alias: "datetime",
             hourFormat: "12"
+        },
+        "mm/dd/yyyy hh:mm xm": {
+            mask: "1/2/y h:s t\\m",
+            placeholder: "mm/dd/yyyy hh:mm xm",
+            alias: "datetime12",
+            regex: {
+                val2pre: function(separator) {
+                    var escapedSeparator = Inputmask.escapeRegex.call(this, separator);
+                    return new RegExp("((0[13-9]|1[012])" + escapedSeparator + "[0-3])|(02" + escapedSeparator + "[0-2])");
+                },
+                val2: function(separator) {
+                    var escapedSeparator = Inputmask.escapeRegex.call(this, separator);
+                    return new RegExp("((0[1-9]|1[012])" + escapedSeparator + "(0[1-9]|[12][0-9]))|((0[13-9]|1[012])" + escapedSeparator + "30)|((0[13578]|1[02])" + escapedSeparator + "31)");
+                },
+                val1pre: new RegExp("[01]"),
+                val1: new RegExp("0[1-9]|1[012]")
+            },
+            leapday: "02/29/",
+            onKeyDown: function(e, buffer, caretPos, opts) {
+                var $input = $(this);
+                if (e.ctrlKey && e.keyCode === Inputmask.keyCode.RIGHT) {
+                    var today = new Date();
+                    $input.val((today.getMonth() + 1).toString() + today.getDate().toString() + today.getFullYear().toString()), 
+                    $input.trigger("setvalue");
+                }
+            }
         },
         "hh:mm t": {
             mask: "h:s t\\m",
