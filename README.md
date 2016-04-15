@@ -9,7 +9,7 @@ jquery.inputmask version: <b id="jquery.inputmask-version">3.1.64-118</b>
 Add
 
 ``` ruby
-gem 'jquery-inputmask-rails', github: 'knapo/jquery-inputmask-rails'`
+gem 'jquery-inputmask-rails', github: 'knapo/jquery-inputmask-rails'
 ```
 
 to your `Gemfile`
