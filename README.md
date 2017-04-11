@@ -2,7 +2,7 @@
 
 jquery-inputmask-rails integrates [jquery.inputmask](https://github.com/RobinHerbots/jquery.inputmask) with rails 3.1+ asset pipeline.
 
-jquery.inputmask version: <b id="jquery.inputmask-version">3.1.64-118</b>
+jquery.inputmask version: <b id="jquery.inputmask-version">3.3.6-0</b>
 
 ### Installation
 
